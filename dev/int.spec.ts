@@ -80,11 +80,19 @@ describe('Plugin tests', () => {
     expect(post.addedByPlugin).toBe('added by plugin')
   })
 
-  it('plugin creates and seeds plugin-collection', async () => {
-    expect(payload.collections['plugin-collection']).toBeDefined()
+  it('plugin creates hubspot-forms collection', async () => {
+    expect(payload.collections['hubspot-forms']).toBeDefined()
 
-    const { docs } = await payload.find({ collection: 'plugin-collection' })
+    // Create a test form document
+    await payload.create({
+      collection: 'hubspot-forms',
+      data: {
+        formId: 'test-form-id',
+        name: 'Test Form',
+      },
+    })
 
+    const { docs } = await payload.find({ collection: 'hubspot-forms' })
     expect(docs).toHaveLength(1)
   })
 })

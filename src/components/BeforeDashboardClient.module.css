@@ -1,0 +1,175 @@
+.hubspotDashboard {
+  padding: 2rem 0;
+  background: var(--theme-elevation-0);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.hubspotDashboardLoading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--theme-elevation-400);
+}
+
+.errorMessage {
+  color: var(--theme-error-500);
+  background: var(--theme-error-100);
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--theme-error-200);
+}
+
+.errorMessage h3 {
+  margin: 0 0 0.5rem;
+}
+
+.errorMessage p {
+  margin: 0;
+}
+
+.hubspotDashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.hubspotDashboardHeader h2 {
+  margin: 0;
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  background: var(--theme-elevation-100);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refreshButton:hover {
+  background: var(--theme-elevation-200);
+}
+
+.hubspotDashboardStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  padding: 1.5rem;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.statCard h3 {
+  margin: 0;
+  color: var(--theme-elevation-400);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.statCard p {
+  margin: 0.5rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--theme-elevation-800);
+}
+
+.hubspotDashboardRecent h3 {
+  margin: 0 0 1rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 6px;
+}
+
+.tableContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tableContainer th,
+.tableContainer td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--theme-elevation-100);
+}
+
+.tableContainer th {
+  background: var(--theme-elevation-50);
+  font-weight: 500;
+  color: var(--theme-elevation-600);
+}
+
+.tableContainer tr:last-child td {
+  border-bottom: none;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.published {
+  background: var(--theme-success-100);
+  color: var(--theme-success-700);
+}
+
+.draft {
+  background: var(--theme-warning-100);
+  color: var(--theme-warning-700);
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--theme-elevation-100);
+  border-top-color: var(--theme-elevation-400);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.copyContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copyButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.copyButton:hover {
+  color: #333;
+}
+
+.copyButton svg {
+  width: 16px;
+  height: 16px;
+}

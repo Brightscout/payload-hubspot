@@ -1,19 +1,22 @@
-import type { ServerComponentProps } from 'payload'
+import { PayloadRequest } from 'payload'
+import { getPluginOptions } from '../index.js'
+import { BeforeDashboardClient } from './BeforeDashboardClient.js'
+import { hubspotFormsHandler } from '../utils/hubspotApi.js'
 
-import styles from './BeforeDashboardServer.module.css'
+export const BeforeDashboardServer = async () => {
+  const pluginOptions = getPluginOptions()
 
-export const BeforeDashboardServer = async (props: ServerComponentProps) => {
-  const { payload } = props
+  if (!pluginOptions) {
+    console.error('Plugin options not available')
+    return <div>HubSpot integration not properly configured</div>
+  }
 
-  const { docs } = await payload.find({ collection: 'plugin-collection' })
-
-  return (
-    <div className={styles.wrapper}>
-      <h1>Added by the plugin: Before Dashboard Server</h1>
-      Docs from Local API:
-      {docs.map((doc) => (
-        <div key={doc.id}>{doc.id}</div>
-      ))}
-    </div>
-  )
+  try {
+    const response = await hubspotFormsHandler({ query: {} } as PayloadRequest, pluginOptions)
+    const forms = await response.json()
+    return <BeforeDashboardClient forms={forms} />
+  } catch (err) {
+    console.error('Error fetching HubSpot forms:', err)
+    return <div>Failed to load HubSpot forms</div>
+  }
 }

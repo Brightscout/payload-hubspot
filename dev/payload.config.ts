@@ -38,7 +38,7 @@ export default buildConfig({
     },
   ],
   db: mongooseAdapter({
-    url: process.env.DATABASE_URI || '',
+    url: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/payload-hubspot',
   }),
   editor: lexicalEditor(),
   email: testEmailAdapter,
@@ -50,6 +50,8 @@ export default buildConfig({
       collections: {
         posts: true,
       },
+      portalId: process.env.HUBSPOT_PORTAL_ID?.toString(),
+      apiKey: process.env.HUBSPOT_API_KEY,
     }),
   ],
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',

@@ -1,28 +1,79 @@
-import type { CollectionSlug, Config } from 'payload'
+import type { CollectionSlug, Config, PayloadRequest } from 'payload'
+import { hubspotFormsHandler } from './utils/hubspotApi.js'
 
 export type PayloadHubspotConfig = {
-  /**
-   * List of collections to add a custom field
-   */
+  portalId?: string
+  apiKey?: string
   collections?: Partial<Record<CollectionSlug, true>>
   disabled?: boolean
 }
 
+let pluginOptionsGlobal: PayloadHubspotConfig | null = null
+
+export const getPluginOptions = () => pluginOptionsGlobal
+
 export const payloadHubspot =
   (pluginOptions: PayloadHubspotConfig) =>
   (config: Config): Config => {
+    pluginOptionsGlobal = pluginOptions
+
     if (!config.collections) {
       config.collections = []
     }
 
+    // Add HubSpot Forms collection
     config.collections.push({
-      slug: 'plugin-collection',
+      slug: 'hubspot-forms',
+      admin: {
+        useAsTitle: 'name',
+        group: 'HubSpot Integration',
+        description: 'Manage your HubSpot forms and view submissions',
+      },
       fields: [
         {
-          name: 'id',
+          name: 'formId',
           type: 'text',
+          required: true,
+          label: 'HubSpot Form ID',
+          unique: true,
+        },
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          label: 'Form Name',
+          admin: {
+            readOnly: true,
+            description: 'Form name from HubSpot (automatically synced)',
+          },
         },
       ],
+      hooks: {
+        beforeChange: [
+          async ({ data, req }) => {
+            // If formId is being updated, fetch the form name from HubSpot
+            if (data.formId) {
+              const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
+              if (apiKey) {
+                try {
+                  const response = await hubspotFormsHandler(
+                    { query: {} } as PayloadRequest,
+                    pluginOptions,
+                  )
+                  const forms = await response.json()
+                  const form = forms.find((f: any) => f.guid === data.formId)
+                  if (form) {
+                    data.name = form.name
+                  }
+                } catch (error) {
+                  console.error('Error fetching form name from HubSpot:', error)
+                }
+              }
+            }
+            return data
+          },
+        ],
+      },
     })
 
     if (pluginOptions.collections) {
@@ -45,7 +96,6 @@ export const payloadHubspot =
 
     /**
      * If the plugin is disabled, we still want to keep added collections/fields so the database schema is consistent which is important for migrations.
-     * If your plugin heavily modifies the database schema, you may want to remove this property.
      */
     if (pluginOptions.disabled) {
       return config
@@ -54,6 +104,17 @@ export const payloadHubspot =
     if (!config.endpoints) {
       config.endpoints = []
     }
+
+    // Pass the request to the handler function
+    config.endpoints.push({
+      handler: async (req: PayloadRequest) => {
+        // Import the handler dynamically to avoid CSS import issues
+        const { hubspotFormsHandler } = await import('./utils/hubspotApi.js')
+        return hubspotFormsHandler(req, pluginOptions)
+      },
+      method: 'get',
+      path: '/hubspot/forms',
+    })
 
     if (!config.admin) {
       config.admin = {}
@@ -67,12 +128,8 @@ export const payloadHubspot =
       config.admin.components.beforeDashboard = []
     }
 
-    config.admin.components.beforeDashboard.push(
-      `payload-hubspot/client#BeforeDashboardClient`,
-    )
-    config.admin.components.beforeDashboard.push(
-      `payload-hubspot/rsc#BeforeDashboardServer`,
-    )
+    // Only add the server component which will render the client component
+    config.admin.components.beforeDashboard.push('payload-hubspot/rsc#BeforeDashboardServer')
 
     config.endpoints.push({
       handler: () => {
@@ -90,22 +147,47 @@ export const payloadHubspot =
         await incomingOnInit(payload)
       }
 
-      const { totalDocs } = await payload.count({
-        collection: 'plugin-collection',
-        where: {
-          id: {
-            equals: 'seeded-by-plugin',
-          },
-        },
-      })
+      // Sync HubSpot forms on init
+      try {
+        const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
+        const portalId = pluginOptions.portalId || process.env.HUBSPOT_PORTAL_ID
 
-      if (totalDocs === 0) {
-        await payload.create({
-          collection: 'plugin-collection',
-          data: {
-            id: 'seeded-by-plugin',
+        if (!apiKey) {
+          console.warn('HubSpot API key not found. Forms sync skipped.')
+          return
+        }
+
+        const response = await fetch('https://api.hubapi.com/forms/v2/forms', {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
         })
+        const forms = await response.json()
+
+        for (const form of forms) {
+          const { docs } = await payload.find({
+            collection: 'hubspot-forms',
+            where: {
+              formId: {
+                equals: form.guid,
+              },
+            },
+          })
+
+          // Only update existing forms, don't create new ones
+          if (docs.length > 0) {
+            await payload.update({
+              collection: 'hubspot-forms',
+              id: docs[0].id,
+              data: {
+                name: form.name,
+              },
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error syncing HubSpot forms:', error)
       }
     }
 
