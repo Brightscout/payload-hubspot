@@ -1,6 +1,6 @@
 {
   "name": "payload-hubspot",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A PayloadCMS plugin for HubSpot integration - view and manage HubSpot forms directly in your Payload admin dashboard",
   "license": "MIT",
   "type": "module",
@@ -14,18 +14,18 @@
     "cms"
   ],
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com",
-    "url": "https://yourwebsite.com"
+    "name": "Igor Abdulovic",
+    "email": "igor.abdulovic@brightscout.com",
+    "url": "https://brightscout.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/payload-hubspot"
+    "url": "https://github.com/gridig/payload-hubspot"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/payload-hubspot/issues"
+    "url": "https://github.com/gridig/payload-hubspot/issues"
   },
-  "homepage": "https://github.com/yourusername/payload-hubspot#readme",
+  "homepage": "https://github.com/gridig/payload-hubspot#readme",
   "exports": {
     ".": {
       "import": "./dist/index.js",
