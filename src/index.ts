@@ -79,8 +79,8 @@ export const payloadHubspot =
         ],
       },
       labels: {
-        plural: 'HubSpot',
-        singular: 'HubSpot',
+        plural: 'HubSpot Forms',
+        singular: 'HubSpot Form',
       },
     })
 
