@@ -1,6 +1,9 @@
-import { payloadHubspot, PayloadHubspotConfig } from '../src/index.js'
-import { Response } from 'node-fetch'
+import type { Response } from 'node-fetch'
 import type { Config } from 'payload'
+
+import type { PayloadHubspotConfig } from '../src/index.js'
+
+import { payloadHubspot } from '../src/index.js'
 
 // Mock the payload module
 jest.mock('payload', () => {
@@ -17,16 +20,16 @@ jest.mock('payload', () => {
 // Create a properly typed mock for fetch
 const mockFetch = jest.fn().mockImplementation(() =>
   Promise.resolve({
-    ok: true,
     json: () =>
       Promise.resolve([
         {
-          guid: 'test-form-id',
           name: 'Test Form',
+          guid: 'test-form-id',
         },
       ]),
-    text: () => Promise.resolve(''),
+    ok: true,
     status: 200,
+    text: () => Promise.resolve(''),
   } as Response),
 )
 
@@ -42,16 +45,16 @@ describe('PayloadCMS HubSpot Plugin', () => {
     jest.clearAllMocks()
     mockFetch.mockImplementation(() =>
       Promise.resolve({
-        ok: true,
         json: () =>
           Promise.resolve([
             {
-              guid: 'test-form-id',
               name: 'Test Form',
+              guid: 'test-form-id',
             },
           ]),
-        text: () => Promise.resolve(''),
+        ok: true,
         status: 200,
+        text: () => Promise.resolve(''),
       } as Response),
     )
   })
@@ -60,22 +63,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
     it('should add the hubspot-forms collection to payload config', () => {
       // Create a minimal valid config
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
       }
 
       const result = payloadHubspot(pluginOptions)(config)
@@ -98,27 +100,26 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should add HubSpot fields to specified collections', () => {
       const config = {
+        admin: {
+          user: 'users',
+        },
         collections: [
           {
             slug: 'pages',
             fields: [],
           },
         ],
-        secret: 'test-secret',
-        admin: {
-          user: 'users',
-        },
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
         collections: {
           pages: true,
         },
@@ -139,22 +140,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should add endpoints to payload config', () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
       }
 
       const result = payloadHubspot(pluginOptions)(config)
@@ -170,22 +170,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should add beforeDashboard component to admin config', () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
       }
 
       const result = payloadHubspot(pluginOptions)(config)
@@ -202,22 +201,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should not modify config when disabled is true', () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
         disabled: true,
       }
 
@@ -235,22 +233,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
   describe('HubSpot API Integration', () => {
     it('should fetch forms from HubSpot API on init', async () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
       }
 
       const result = payloadHubspot(pluginOptions)(config)
@@ -275,8 +272,8 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
       // Check if payload.update was called to update the form name
       expect(mockPayload.update).toHaveBeenCalledWith({
-        collection: 'hubspot-forms',
         id: '123',
+        collection: 'hubspot-forms',
         data: {
           name: 'Test Form',
         },
@@ -285,22 +282,21 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should handle API errors gracefully', async () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
       const pluginOptions: PayloadHubspotConfig = {
         apiKey: 'test-api-key',
-        portalId: 'test-portal-id',
       }
 
       const result = payloadHubspot(pluginOptions)(config)
@@ -324,22 +320,20 @@ describe('PayloadCMS HubSpot Plugin', () => {
 
     it('should warn if API key is missing', async () => {
       const config = {
-        collections: [],
-        secret: 'test-secret',
         admin: {
           user: 'users',
         },
+        collections: [],
         db: {
           connect: async () => {},
-          disconnect: async () => {},
           defaultIDType: 'uuid',
+          disconnect: async () => {},
           init: async () => {},
         },
+        secret: 'test-secret',
       } as unknown as Config
 
-      const pluginOptions: PayloadHubspotConfig = {
-        portalId: 'test-portal-id',
-      }
+      const pluginOptions: PayloadHubspotConfig = {}
 
       const result = payloadHubspot(pluginOptions)(config)
 

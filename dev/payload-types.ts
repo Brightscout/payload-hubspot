@@ -133,7 +133,7 @@ export interface Post {
   createdAt: string
 }
 /**
- * Manage your HubSpot forms and view submissions
+ * Manage your HubSpot forms
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hubspot-forms".
@@ -142,10 +142,6 @@ export interface HubspotForm {
   id: string
   name: string
   formId: string
-  /**
-   * This will default to the Portal ID in your environment variables
-   */
-  portalId: string
   /**
    * Last time form fields were synced with HubSpot
    */
@@ -290,7 +286,6 @@ export interface MediaSelect<T extends boolean = true> {
 export interface HubspotFormsSelect<T extends boolean = true> {
   name?: T
   formId?: T
-  portalId?: T
   status?: T
   fields?:
     | T

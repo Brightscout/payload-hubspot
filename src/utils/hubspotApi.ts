@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+
 import type { PayloadHubspotConfig } from '../index.js'
 
 // Cache storage for HubSpot forms data
@@ -63,13 +64,13 @@ export const hubspotFormsHandler = async (
           return {
             ...form,
             stats: {
-              views: totals.formViews || 0,
-              submissions: totals.submissions || 0,
+              clickThroughRate: totals.clickThroughPerFormView || 0,
               conversionRate: totals.submissionsPerFormView || 0,
               interactions: totals.interactions || 0,
-              clickThroughRate: totals.clickThroughPerFormView || 0,
-              submissionRate: totals.submissionsPerClickThrough || 0,
               nonContactSubmissions: totals.nonContactSubmissions || 0,
+              submissionRate: totals.submissionsPerClickThrough || 0,
+              submissions: totals.submissions || 0,
+              views: totals.formViews || 0,
             },
           }
         } catch (err) {
@@ -80,13 +81,13 @@ export const hubspotFormsHandler = async (
           return {
             ...form,
             stats: {
-              views: 0,
-              submissions: 0,
+              clickThroughRate: 0,
               conversionRate: 0,
               interactions: 0,
-              clickThroughRate: 0,
-              submissionRate: 0,
               nonContactSubmissions: 0,
+              submissionRate: 0,
+              submissions: 0,
+              views: 0,
             },
           }
         }
@@ -103,8 +104,8 @@ export const hubspotFormsHandler = async (
   } catch (error) {
     console.error('Error fetching HubSpot forms:', error)
     return new Response(JSON.stringify({ error: 'Failed to fetch HubSpot forms' }), {
-      status: 500,
       headers: { 'Content-Type': 'application/json' },
+      status: 500,
     })
   }
 }

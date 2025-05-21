@@ -1,14 +1,15 @@
 import type { CollectionSlug, Config, PayloadRequest } from 'payload'
+
 import { hubspotFormsHandler } from './utils/hubspotApi.js'
 
 export type PayloadHubspotConfig = {
-  portalId?: string
   apiKey?: string
   collections?: Partial<Record<CollectionSlug, true>>
   disabled?: boolean
+  disableDashboard?: boolean
 }
 
-let pluginOptionsGlobal: PayloadHubspotConfig | null = null
+let pluginOptionsGlobal: null | PayloadHubspotConfig = null
 
 export const getPluginOptions = () => pluginOptionsGlobal
 
@@ -25,27 +26,30 @@ export const payloadHubspot =
     config.collections.push({
       slug: 'hubspot-forms',
       admin: {
+        components: {
+          beforeList: ['payload-hubspot/rsc#BeforeDashboardServer'],
+        },
+        description: 'Manage HubSpot forms available in your Collections',
+        group: 'Integrations',
         useAsTitle: 'name',
-        group: 'HubSpot Integration',
-        description: 'Manage your HubSpot forms and view submissions',
       },
       fields: [
         {
           name: 'formId',
           type: 'text',
-          required: true,
           label: 'HubSpot Form ID',
+          required: true,
           unique: true,
         },
         {
           name: 'name',
           type: 'text',
-          required: true,
-          label: 'Form Name',
           admin: {
-            readOnly: true,
             description: 'Form name from HubSpot (automatically synced)',
+            readOnly: true,
           },
+          label: 'Form Name',
+          required: true,
         },
       ],
       hooks: {
@@ -73,6 +77,10 @@ export const payloadHubspot =
             return data
           },
         ],
+      },
+      labels: {
+        plural: 'HubSpot',
+        singular: 'HubSpot',
       },
     })
 
@@ -128,9 +136,6 @@ export const payloadHubspot =
       config.admin.components.beforeDashboard = []
     }
 
-    // Only add the server component which will render the client component
-    config.admin.components.beforeDashboard.push('payload-hubspot/rsc#BeforeDashboardServer')
-
     config.endpoints.push({
       handler: () => {
         return Response.json({ message: 'Hello from custom endpoint' })
@@ -150,7 +155,6 @@ export const payloadHubspot =
       // Sync HubSpot forms on init
       try {
         const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
-        const portalId = pluginOptions.portalId || process.env.HUBSPOT_PORTAL_ID
 
         if (!apiKey) {
           console.warn('HubSpot API key not found. Forms sync skipped.')
@@ -178,8 +182,8 @@ export const payloadHubspot =
           // Only update existing forms, don't create new ones
           if (docs.length > 0) {
             await payload.update({
-              collection: 'hubspot-forms',
               id: docs[0].id,
+              collection: 'hubspot-forms',
               data: {
                 name: form.name,
               },

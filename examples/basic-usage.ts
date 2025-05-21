@@ -46,13 +46,11 @@ export default buildConfig({
   plugins: [
     payloadHubspot({
       // Option 1: Use environment variables (recommended)
-      // Make sure to add these to your .env file:
+      // Make sure to add this to your .env file:
       // HUBSPOT_API_KEY=your-hubspot-api-key
-      // HUBSPOT_PORTAL_ID=your-hubspot-portal-id
 
       // Option 2: Pass values directly (not recommended for production)
       // apiKey: 'your-hubspot-api-key',
-      // portalId: 'your-hubspot-portal-id',
 
       // Add HubSpot fields to specific collections
       collections: {

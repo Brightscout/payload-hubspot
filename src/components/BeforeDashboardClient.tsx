@@ -1,16 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useConfig } from '@payloadcms/ui'
+
 import styles from './BeforeDashboardClient.module.css'
 
 type HubSpotForm = {
   guid: string
   name: string
   stats: {
-    views: number
-    submissions: number
     conversionRate: number
+    submissions: number
+    views: number
   }
 }
 
@@ -20,7 +20,7 @@ type BeforeDashboardClientProps = {
 
 export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardClientProps) => {
   const [loading, setLoading] = useState(false)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<null | string>(null)
   const [forms, setForms] = useState<HubSpotForm[]>(initialForms || [])
 
   if (!forms || !Array.isArray(forms)) {
@@ -33,7 +33,7 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
     forms.reduce((sum, form) => sum + form.stats.conversionRate, 0) / forms.length
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    void navigator.clipboard.writeText(text)
     setCopiedId(text)
     setTimeout(() => setCopiedId(null), 2000)
   }
@@ -48,9 +48,9 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
   }
 
   return (
-    <div className={styles.hubspotDashboard}>
+    <div className="gutter--left gutter--right collection-list__wrap">
       <div className={styles.hubspotDashboardHeader}>
-        <h2>HubSpot Forms Overview</h2>
+        <h1>HubSpot Forms Overview</h1>
         <button
           className={styles.refreshButton}
           onClick={async () => {
@@ -68,6 +68,7 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
               setLoading(false)
             }
           }}
+          type="button"
         >
           Refresh Data
         </button>
@@ -93,7 +94,7 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
       </div>
 
       <div className={styles.hubspotDashboardRecent}>
-        <h3>All Forms</h3>
+        <h3>All Available Forms</h3>
         <div className={styles.tableContainer}>
           <table>
             <thead>
@@ -118,34 +119,35 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
                           className={styles.copyButton}
                           onClick={() => copyToClipboard(form.guid)}
                           title="Copy to clipboard"
+                          type="button"
                         >
                           {copiedId === form.guid ? (
                             <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
                               fill="none"
+                              height="16"
                               stroke="currentColor"
-                              strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
                               <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                           ) : (
                             <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
                               fill="none"
+                              height="16"
                               stroke="currentColor"
-                              strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                              <rect height="13" rx="2" ry="2" width="13" x="9" y="9"></rect>
                               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
                           )}

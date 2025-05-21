@@ -39,7 +39,6 @@ export default buildConfig({
   // ... your existing config
   plugins: [
     payloadHubspot({
-      portalId: process.env.HUBSPOT_PORTAL_ID, // Your HubSpot portal ID
       apiKey: process.env.HUBSPOT_API_KEY, // Your HubSpot API key
     }),
   ],
@@ -52,7 +51,6 @@ Add these to your `.env` file:
 
 ```
 HUBSPOT_API_KEY=your-hubspot-api-key
-HUBSPOT_PORTAL_ID=your-hubspot-portal-id
 ```
 
 ### Configuration Options
@@ -61,7 +59,6 @@ The plugin accepts the following options:
 
 ```typescript
 type PayloadHubspotConfig = {
-  portalId?: string // Your HubSpot portal ID (can also be set via env var)
   apiKey?: string // Your HubSpot API key (can also be set via env var)
   collections?: Partial<Record<CollectionSlug, true>> // Collections to add HubSpot fields to
   disabled?: boolean // Set to true to disable the plugin functionality
@@ -78,7 +75,6 @@ export default buildConfig({
   // ... your existing config
   plugins: [
     payloadHubspot({
-      portalId: process.env.HUBSPOT_PORTAL_ID,
       apiKey: process.env.HUBSPOT_API_KEY,
       collections: {
         pages: true,

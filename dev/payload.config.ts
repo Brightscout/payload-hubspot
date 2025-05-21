@@ -47,10 +47,6 @@ export default buildConfig({
   },
   plugins: [
     payloadHubspot({
-      collections: {
-        posts: true,
-      },
-      portalId: process.env.HUBSPOT_PORTAL_ID?.toString(),
       apiKey: process.env.HUBSPOT_API_KEY,
     }),
   ],

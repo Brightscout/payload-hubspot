@@ -1,7 +1,8 @@
-import { PayloadRequest } from 'payload'
+import type { PayloadRequest } from 'payload'
+
 import { getPluginOptions } from '../index.js'
-import { BeforeDashboardClient } from './BeforeDashboardClient.js'
 import { hubspotFormsHandler } from '../utils/hubspotApi.js'
+import { BeforeDashboardClient } from './BeforeDashboardClient.js'
 
 export const BeforeDashboardServer = async () => {
   const pluginOptions = getPluginOptions()
