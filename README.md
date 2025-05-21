@@ -2,8 +2,6 @@
 
 A PayloadCMS plugin for HubSpot integration - view and manage HubSpot forms directly in your Payload admin dashboard.
 
-![Payload HubSpot Plugin](https://via.placeholder.com/800x400?text=Payload+HubSpot+Plugin)
-
 ## Features
 
 - 📊 **Dashboard Overview**: View all your HubSpot forms with key metrics directly in your Payload admin dashboard
