@@ -136,7 +136,3 @@ pnpm build
 ```bash
 pnpm test
 ```
-
-## License
-
-MIT © [Your Name](https://yourwebsite.com)
