@@ -170,24 +170,30 @@ export const payloadHubspot =
         const forms = await response.json()
 
         for (const form of forms) {
-          const { docs } = await payload.find({
-            collection: 'hubspot-forms',
-            where: {
-              formId: {
-                equals: form.guid,
-              },
-            },
-          })
-
-          // Only update existing forms, don't create new ones
-          if (docs.length > 0) {
-            await payload.update({
-              id: docs[0].id,
+          try {
+            const { docs } = await payload.find({
               collection: 'hubspot-forms',
-              data: {
-                name: form.name,
+              where: {
+                formId: {
+                  equals: form.guid,
+                },
               },
             })
+
+            // Only update existing forms, don't create new ones
+            if (docs.length > 0) {
+              await payload.update({
+                id: docs[0].id,
+                collection: 'hubspot-forms',
+                data: {
+                  name: form.name,
+                },
+              })
+            }
+          } catch (dbError) {
+            // Collection doesn't exist yet, skip this form
+            console.log('HubSpot forms collection not yet created. Skipping sync.')
+            break
           }
         }
       } catch (error) {
