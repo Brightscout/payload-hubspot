@@ -29,8 +29,10 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
 
   const totalSubmissions = forms.reduce((sum, form) => sum + form.stats.submissions, 0)
   const totalViews = forms.reduce((sum, form) => sum + form.stats.views, 0)
-  const averageConversionRate =
-    forms.reduce((sum, form) => sum + form.stats.conversionRate, 0) / forms.length
+  const validConversionRates = forms.filter(form => form.stats.conversionRate !== undefined)
+  const averageConversionRate = validConversionRates.length > 0
+    ? validConversionRates.reduce((sum, form) => sum + form.stats.conversionRate, 0) / validConversionRates.length
+    : undefined
 
   const copyToClipboard = (text: string) => {
     void navigator.clipboard.writeText(text)
@@ -89,7 +91,7 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
         </div>
         <div className={styles.statCard}>
           <h3>Avg. Conversion Rate</h3>
-          <p>{(averageConversionRate * 100).toFixed(1)}%</p>
+          <p>{averageConversionRate ? `${(averageConversionRate * 100).toFixed(1)}%` : 'N/A'}</p>
         </div>
       </div>
 
@@ -156,7 +158,7 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
                     </td>
                     <td>{form.stats.views}</td>
                     <td>{form.stats.submissions}</td>
-                    <td>{(form.stats.conversionRate * 100).toFixed(1)}%</td>
+                    <td>{form.stats.conversionRate === undefined ? 'N/A' : `${(form.stats.conversionRate * 100).toFixed(1)}%`}</td>
                   </tr>
                 ))}
             </tbody>

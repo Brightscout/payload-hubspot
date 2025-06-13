@@ -65,7 +65,7 @@ export const hubspotFormsHandler = async (
             ...form,
             stats: {
               clickThroughRate: totals.clickThroughPerFormView || 0,
-              conversionRate: totals.submissionsPerFormView || 0,
+              conversionRate: (totals.submissionsPerFormView || 0) > 1 ? undefined : (totals.submissionsPerFormView || 0),
               interactions: totals.interactions || 0,
               nonContactSubmissions: totals.nonContactSubmissions || 0,
               submissionRate: totals.submissionsPerClickThrough || 0,
