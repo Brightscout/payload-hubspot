@@ -49,6 +49,7 @@ export default buildConfig({
 Add these to your `.env` file:
 
 ```
+HUBSPOT_PORTAL_ID=your-hubspot-portal-id
 HUBSPOT_API_KEY=your-hubspot-api-key
 ```
 
