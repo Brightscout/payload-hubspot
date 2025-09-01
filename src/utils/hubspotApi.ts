@@ -22,9 +22,9 @@ const exponentialBackoff = (attempt: number): number => {
   return BASE_RETRY_DELAY * Math.pow(2, attempt) + Math.random() * 1000
 }
 
-// Logging helper - only logs in development or when DEBUG is enabled
+// Logging helper - only logs when explicitly enabled
 const debugLog = (message: string): void => {
-  if (process.env.NODE_ENV === 'development' || process.env.HUBSPOT_DEBUG === 'true') {
+  if (process.env.HUBSPOT_DEBUG === 'true') {
     // eslint-disable-next-line no-console
     console.log(`[HubSpot Plugin] ${message}`)
   }
