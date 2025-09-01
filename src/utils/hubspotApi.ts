@@ -10,7 +10,7 @@ let formsCache: {
 const CACHE_DURATION = 3600 * 1000 // 1 hour in milliseconds
 
 // Rate limiting configuration
-const RATE_LIMIT_DELAY = 600 // 600ms between requests (max ~100 requests per minute)
+const RATE_LIMIT_DELAY = 50 // 50ms between requests (max ~100 requests per minute)
 const MAX_RETRIES = 3
 const BASE_RETRY_DELAY = 1000 // 1 second base delay for retries
 
