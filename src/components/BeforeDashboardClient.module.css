@@ -220,3 +220,52 @@
 .refreshButton:disabled:hover {
   background: var(--theme-elevation-100);
 }
+
+/* Styles for cached analytics component */
+.noData {
+  color: var(--theme-elevation-400);
+  font-style: italic;
+}
+
+.staleData {
+  color: var(--theme-warning-600);
+  font-size: 0.8rem;
+}
+
+.freshData {
+  color: var(--theme-success-600);
+  font-size: 0.8rem;
+}
+
+.refreshFormButton {
+  background: none;
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-elevation-600);
+  transition: all 0.2s ease;
+}
+
+.refreshFormButton:hover {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-800);
+}
+
+.refreshFormButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refreshFormButton:disabled:hover {
+  background: none;
+  color: var(--theme-elevation-600);
+}
+
+.refreshFormButton svg {
+  width: 14px;
+  height: 14px;
+}

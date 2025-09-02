@@ -1,6 +1,6 @@
 import type { CollectionSlug, Config, PayloadRequest } from 'payload'
 
-import { hubspotFormsHandler } from './utils/hubspotApi.js'
+// Removed unused import - forms are now managed manually
 
 export type PayloadHubspotConfig = {
   apiKey?: string
@@ -29,7 +29,8 @@ export const payloadHubspot =
         components: {
           beforeList: ['payload-hubspot/rsc#BeforeDashboardServer'],
         },
-        description: 'Manage HubSpot forms available in your Collections',
+        description:
+          'Add HubSpot forms you want to track. Enter the Form ID and the name will be fetched automatically. No forms are added without your action.',
         group: 'Integrations',
         useAsTitle: 'name',
       },
@@ -37,6 +38,10 @@ export const payloadHubspot =
         {
           name: 'formId',
           type: 'text',
+          admin: {
+            description:
+              'Enter the HubSpot form GUID. The form name will be automatically fetched.',
+          },
           label: 'HubSpot Form ID',
           required: true,
           unique: true,
@@ -45,33 +50,125 @@ export const payloadHubspot =
           name: 'name',
           type: 'text',
           admin: {
-            description: 'Form name from HubSpot (automatically synced)',
+            description:
+              'Form name from HubSpot (automatically fetched when you enter the Form ID)',
             readOnly: true,
           },
           label: 'Form Name',
           required: true,
         },
+        {
+          name: 'analytics',
+          type: 'group',
+          admin: {
+            description: 'Cached analytics data from HubSpot',
+          },
+          fields: [
+            {
+              name: 'views',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'submissions',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'conversionRate',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+            },
+            {
+              name: 'clickThroughRate',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'interactions',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'submissionRate',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'nonContactSubmissions',
+              type: 'number',
+              admin: {
+                readOnly: true,
+              },
+              defaultValue: 0,
+            },
+            {
+              name: 'lastUpdated',
+              type: 'date',
+              admin: {
+                readOnly: true,
+              },
+            },
+          ],
+        },
       ],
       hooks: {
         beforeChange: [
-          async ({ data, req }) => {
-            // If formId is being updated, fetch the form name from HubSpot
-            if (data.formId) {
+          async ({ data, operation }) => {
+            // Only fetch form name when user is manually creating a new form entry
+            if (data.formId && operation === 'create' && !data.name) {
               const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
               if (apiKey) {
                 try {
-                  const response = await hubspotFormsHandler(
-                    { query: {} } as PayloadRequest,
-                    pluginOptions,
-                  )
-                  const forms = await response.json()
-                  const form = forms.find((f: any) => f.guid === data.formId)
-                  if (form) {
-                    data.name = form.name
+                  // Fetch form details directly from HubSpot to validate and get name
+                  const response = await fetch('https://api.hubapi.com/forms/v2/forms', {
+                    headers: {
+                      Authorization: `Bearer ${apiKey}`,
+                      'Content-Type': 'application/json',
+                    },
+                  })
+
+                  if (response.ok) {
+                    const forms = await response.json()
+                    const form = forms.find(
+                      (f: { guid: string; name: string }) => f.guid === data.formId,
+                    )
+                    if (form) {
+                      data.name = form.name
+                    } else {
+                      // Form not found in HubSpot
+                      throw new Error(
+                        `Form with ID ${data.formId} not found in HubSpot. Please check the Form ID.`,
+                      )
+                    }
+                  } else {
+                    throw new Error('Unable to connect to HubSpot API to validate form ID')
                   }
                 } catch (error) {
-                  console.error('Error fetching form name from HubSpot:', error)
+                  // If we can't fetch the form name, let the user know
+                  throw new Error(
+                    `Unable to validate form ID with HubSpot: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  )
                 }
+              } else {
+                throw new Error('HubSpot API key not configured. Cannot validate form ID.')
               }
             }
             return data
@@ -134,6 +231,46 @@ export const payloadHubspot =
       path: '/hubspot/form-analytics/:formGuid',
     })
 
+    // Refresh analytics endpoint
+    config.endpoints.push({
+      handler: async (req: PayloadRequest) => {
+        try {
+          const { refreshFormAnalytics } = await import('./utils/syncFormAnalytics.js')
+          const { getPayload } = await import('payload')
+
+          const payload = await getPayload({ config: req.payload.config })
+          const formId = req.routeParams?.formId as string | undefined
+
+          await refreshFormAnalytics(payload, pluginOptions, formId)
+
+          return new Response(
+            JSON.stringify({
+              message: formId
+                ? `Analytics refreshed for form ${formId}`
+                : 'All analytics refreshed',
+              success: true,
+            }),
+            {
+              headers: { 'Content-Type': 'application/json' },
+            },
+          )
+        } catch (error) {
+          return new Response(
+            JSON.stringify({
+              details: error instanceof Error ? error.message : 'Unknown error',
+              error: 'Failed to refresh analytics',
+            }),
+            {
+              headers: { 'Content-Type': 'application/json' },
+              status: 500,
+            },
+          )
+        }
+      },
+      method: 'post',
+      path: '/hubspot/refresh-analytics/:formId?',
+    })
+
     if (!config.admin) {
       config.admin = {}
     }
@@ -167,65 +304,37 @@ export const payloadHubspot =
         const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
 
         if (!apiKey) {
-          console.warn('HubSpot API key not found. Forms sync skipped.')
+          // HubSpot API key not found. Forms sync skipped.
           return
         }
 
-        console.log('Syncing HubSpot forms (basic data only)...')
-        const response = await fetch('https://api.hubapi.com/forms/v2/forms', {
+        // Test API connection to ensure HubSpot is accessible
+        const testResponse = await fetch('https://api.hubapi.com/forms/v2/forms?limit=1', {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
         })
 
-        if (!response.ok) {
-          throw new Error(`Forms API failed with status ${response.status}`)
+        if (!testResponse.ok) {
+          throw new Error(`HubSpot API connection failed with status ${testResponse.status}`)
         }
 
-        const forms = await response.json()
-        console.log(`Found ${forms.length} forms to sync`)
+        // API connection successful - forms will be added manually by users
 
-        for (const form of forms) {
+        // Start background analytics sync (non-blocking)
+        setTimeout(async () => {
           try {
-            const { docs } = await payload.find({
-              collection: 'hubspot-forms',
-              where: {
-                formId: {
-                  equals: form.guid,
-                },
-              },
-            })
-
-            if (docs.length > 0) {
-              // Update existing form (name only)
-              await payload.update({
-                id: docs[0].id,
-                collection: 'hubspot-forms',
-                data: {
-                  name: form.name,
-                },
-              })
-            } else {
-              // Create new form entry (without analytics)
-              await payload.create({
-                collection: 'hubspot-forms',
-                data: {
-                  name: form.name,
-                  formId: form.guid,
-                },
-              })
-            }
-          } catch (dbError) {
-            // Collection doesn't exist yet, skip this form
-            console.log('HubSpot forms collection not yet created. Skipping sync.')
-            break
+            // Starting background analytics sync
+            const { syncFormAnalytics } = await import('./utils/syncFormAnalytics.js')
+            await syncFormAnalytics(payload, pluginOptions)
+            // Background analytics sync completed
+          } catch (_analyticsError) {
+            // Error during background analytics sync - silently handled
           }
-        }
-
-        console.log('HubSpot forms sync completed')
-      } catch (error) {
-        console.error('Error syncing HubSpot forms:', error)
+        }, 5000) // 5 second delay to let server fully initialize
+      } catch (_error) {
+        // Error syncing HubSpot forms - silently handled
       }
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "payload-hubspot",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "A PayloadCMS plugin for HubSpot integration - view and manage HubSpot forms directly in your Payload admin dashboard",
   "license": "MIT",
   "type": "module",
