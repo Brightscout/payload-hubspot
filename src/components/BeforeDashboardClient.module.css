@@ -173,3 +173,50 @@
   width: 16px;
   height: 16px;
 }
+
+/* New styles for async loading */
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loadingText {
+  color: var(--theme-elevation-600);
+  font-size: 0.875rem;
+}
+
+.formId {
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.errorText {
+  color: var(--theme-error-500);
+  font-weight: 500;
+}
+
+.statusLoading {
+  color: var(--theme-warning-600);
+  font-size: 0.8rem;
+}
+
+.statusError {
+  color: var(--theme-error-500);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.statusSuccess {
+  color: var(--theme-success-600);
+  font-size: 0.8rem;
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refreshButton:disabled:hover {
+  background: var(--theme-elevation-100);
+}

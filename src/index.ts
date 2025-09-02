@@ -124,6 +124,16 @@ export const payloadHubspot =
       path: '/hubspot/forms',
     })
 
+    // Individual form analytics endpoint
+    config.endpoints.push({
+      handler: async (req: PayloadRequest) => {
+        const { individualFormAnalyticsHandler } = await import('./utils/hubspotApi.js')
+        return individualFormAnalyticsHandler(req, pluginOptions)
+      },
+      method: 'get',
+      path: '/hubspot/form-analytics/:formGuid',
+    })
+
     if (!config.admin) {
       config.admin = {}
     }
@@ -152,7 +162,7 @@ export const payloadHubspot =
         await incomingOnInit(payload)
       }
 
-      // Sync HubSpot forms on init
+      // Sync HubSpot forms on init (basic form data only, no analytics)
       try {
         const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
 
@@ -161,13 +171,20 @@ export const payloadHubspot =
           return
         }
 
+        console.log('Syncing HubSpot forms (basic data only)...')
         const response = await fetch('https://api.hubapi.com/forms/v2/forms', {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
         })
+
+        if (!response.ok) {
+          throw new Error(`Forms API failed with status ${response.status}`)
+        }
+
         const forms = await response.json()
+        console.log(`Found ${forms.length} forms to sync`)
 
         for (const form of forms) {
           try {
@@ -180,13 +197,22 @@ export const payloadHubspot =
               },
             })
 
-            // Only update existing forms, don't create new ones
             if (docs.length > 0) {
+              // Update existing form (name only)
               await payload.update({
                 id: docs[0].id,
                 collection: 'hubspot-forms',
                 data: {
                   name: form.name,
+                },
+              })
+            } else {
+              // Create new form entry (without analytics)
+              await payload.create({
+                collection: 'hubspot-forms',
+                data: {
+                  name: form.name,
+                  formId: form.guid,
                 },
               })
             }
@@ -196,6 +222,8 @@ export const payloadHubspot =
             break
           }
         }
+
+        console.log('HubSpot forms sync completed')
       } catch (error) {
         console.error('Error syncing HubSpot forms:', error)
       }

@@ -91,6 +91,69 @@ const fetchFormAnalyticsWithRetry = async (
   }
 }
 
+// Individual form analytics handler
+export const individualFormAnalyticsHandler = async (
+  req: PayloadRequest,
+  pluginOptions: PayloadHubspotConfig,
+): Promise<Response> => {
+  try {
+    const formGuid = req.routeParams?.formGuid
+
+    if (!formGuid || typeof formGuid !== 'string') {
+      return new Response(JSON.stringify({ error: 'Form GUID required' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      })
+    }
+
+    debugLog(`Fetching analytics for individual form: ${formGuid}`)
+
+    const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: 'HubSpot API key not configured' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      })
+    }
+
+    // Get analytics with retry logic for individual form
+    const analytics = await fetchFormAnalyticsWithRetry(formGuid, pluginOptions)
+
+    // Extract meaningful stats from analytics
+    const totals = analytics.totals || {}
+    const stats = {
+      clickThroughRate: totals.clickThroughPerFormView || 0,
+      conversionRate:
+        (totals.submissionsPerFormView || 0) > 1 ? undefined : totals.submissionsPerFormView || 0,
+      interactions: totals.interactions || 0,
+      nonContactSubmissions: totals.nonContactSubmissions || 0,
+      submissionRate: totals.submissionsPerClickThrough || 0,
+      submissions: totals.submissions || 0,
+      views: totals.formViews || 0,
+    }
+
+    debugLog(`Successfully fetched analytics for form: ${formGuid}`)
+
+    return new Response(JSON.stringify({ stats }), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    const formGuid = req.routeParams?.formGuid
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    errorLog(`Error fetching analytics for form ${String(formGuid)}:`, error)
+    return new Response(
+      JSON.stringify({
+        details: errorMessage,
+        error: 'Failed to fetch form analytics',
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      },
+    )
+  }
+}
+
 export const hubspotFormsHandler = async (
   req: PayloadRequest,
   pluginOptions: PayloadHubspotConfig,
