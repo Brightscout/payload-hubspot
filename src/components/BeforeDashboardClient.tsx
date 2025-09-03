@@ -29,10 +29,12 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
 
   const totalSubmissions = forms.reduce((sum, form) => sum + form.stats.submissions, 0)
   const totalViews = forms.reduce((sum, form) => sum + form.stats.views, 0)
-  const validConversionRates = forms.filter(form => form.stats.conversionRate !== undefined)
-  const averageConversionRate = validConversionRates.length > 0
-    ? validConversionRates.reduce((sum, form) => sum + form.stats.conversionRate, 0) / validConversionRates.length
-    : undefined
+  const validConversionRates = forms.filter((form) => form.stats.conversionRate !== undefined)
+  const averageConversionRate =
+    validConversionRates.length > 0
+      ? validConversionRates.reduce((sum, form) => sum + form.stats.conversionRate, 0) /
+        validConversionRates.length
+      : undefined
 
   const copyToClipboard = (text: string) => {
     void navigator.clipboard.writeText(text)
@@ -64,8 +66,8 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
               }
               const newForms = await response.json()
               setForms(newForms)
-            } catch (error) {
-              console.error('Error refreshing forms:', error)
+            } catch (_error) {
+              // Error refreshing forms - silently handled
             } finally {
               setLoading(false)
             }
@@ -158,7 +160,11 @@ export const BeforeDashboardClient = ({ forms: initialForms }: BeforeDashboardCl
                     </td>
                     <td>{form.stats.views}</td>
                     <td>{form.stats.submissions}</td>
-                    <td>{form.stats.conversionRate === undefined ? 'N/A' : `${(form.stats.conversionRate * 100).toFixed(1)}%`}</td>
+                    <td>
+                      {form.stats.conversionRate === undefined
+                        ? 'N/A'
+                        : `${(form.stats.conversionRate * 100).toFixed(1)}%`}
+                    </td>
                   </tr>
                 ))}
             </tbody>

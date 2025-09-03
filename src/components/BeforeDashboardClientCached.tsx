@@ -18,6 +18,7 @@ type HubSpotFormAnalytics = {
 type HubSpotForm = {
   analytics?: HubSpotFormAnalytics
   guid: string
+  isTracked?: boolean
   name: string
   refreshing?: boolean
 }
@@ -77,10 +78,10 @@ export const BeforeDashboardClientCached = ({
         // Reload the page to get fresh data
         window.location.reload()
       } else {
-        console.error('Failed to refresh analytics')
+        // Failed to refresh analytics - silently handled
       }
-    } catch (error) {
-      console.error('Error refreshing analytics:', error)
+    } catch (_error) {
+      // Error refreshing analytics - silently handled
     } finally {
       setGlobalRefreshing(false)
     }
@@ -100,10 +101,10 @@ export const BeforeDashboardClientCached = ({
         // Reload the page to get fresh data
         window.location.reload()
       } else {
-        console.error(`Failed to refresh analytics for form ${formId}`)
+        // Failed to refresh analytics for form - silently handled
       }
-    } catch (error) {
-      console.error(`Error refreshing analytics for form ${formId}:`, error)
+    } catch (_error) {
+      // Error refreshing analytics for form - silently handled
     } finally {
       setForms((prevForms) =>
         prevForms.map((form) => (form.guid === formId ? { ...form, refreshing: false } : form)),
@@ -180,13 +181,24 @@ export const BeforeDashboardClientCached = ({
       </div>
 
       <div className={styles.hubspotDashboardRecent}>
-        <h3>All Available Forms</h3>
+        <h3>All Available Forms from HubSpot</h3>
+        <p
+          style={{
+            color: 'var(--theme-elevation-600)',
+            fontSize: '0.875rem',
+            marginBottom: '1rem',
+          }}
+        >
+          Showing all forms from your HubSpot account. Only "Tracked" forms have cached analytics
+          data.
+        </p>
         <div className={styles.tableContainer}>
           <table>
             <thead>
               <tr>
                 <th>Form Name</th>
                 <th>Form ID</th>
+                <th>Tracking Status</th>
                 <th>Views</th>
                 <th>Submissions</th>
                 <th>Conversion Rate</th>
@@ -244,6 +256,13 @@ export const BeforeDashboardClientCached = ({
                       </div>
                     </td>
                     <td>
+                      <span
+                        className={form.isTracked ? styles.trackedBadge : styles.notTrackedBadge}
+                      >
+                        {form.isTracked ? 'Tracked' : 'Not Tracked'}
+                      </span>
+                    </td>
+                    <td>
                       {form.analytics ? (
                         form.analytics.views.toLocaleString()
                       ) : (
@@ -276,34 +295,38 @@ export const BeforeDashboardClientCached = ({
                       </span>
                     </td>
                     <td>
-                      <button
-                        className={styles.refreshFormButton}
-                        disabled={form.refreshing || globalRefreshing}
-                        onClick={() => refreshFormAnalytics(form.guid)}
-                        title="Refresh analytics for this form"
-                        type="button"
-                      >
-                        {form.refreshing ? (
-                          <div className={styles.loadingSpinner} />
-                        ) : (
-                          <svg
-                            fill="none"
-                            height="14"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            width="14"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                            <path d="M21 3v5h-5"></path>
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                            <path d="M3 21v-5h5"></path>
-                          </svg>
-                        )}
-                      </button>
+                      {form.isTracked ? (
+                        <button
+                          className={styles.refreshFormButton}
+                          disabled={form.refreshing || globalRefreshing}
+                          onClick={() => refreshFormAnalytics(form.guid)}
+                          title="Refresh analytics for this form"
+                          type="button"
+                        >
+                          {form.refreshing ? (
+                            <div className={styles.loadingSpinner} />
+                          ) : (
+                            <svg
+                              fill="none"
+                              height="14"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                              width="14"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                              <path d="M21 3v5h-5"></path>
+                              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                              <path d="M3 21v-5h5"></path>
+                            </svg>
+                          )}
+                        </button>
+                      ) : (
+                        <span className={styles.noData}>-</span>
+                      )}
                     </td>
                   </tr>
                 ))}

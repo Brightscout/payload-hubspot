@@ -269,3 +269,24 @@
   width: 14px;
   height: 14px;
 }
+
+/* Tracking status badges */
+.trackedBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--theme-success-100);
+  color: var(--theme-success-700);
+}
+
+.notTrackedBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-600);
+}

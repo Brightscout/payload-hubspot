@@ -210,12 +210,73 @@ export const payloadHubspot =
       config.endpoints = []
     }
 
-    // Pass the request to the handler function
+    // Get all HubSpot forms for dashboard display
     config.endpoints.push({
       handler: async (req: PayloadRequest) => {
-        // Import the handler dynamically to avoid CSS import issues
-        const { hubspotFormsHandler } = await import('./utils/hubspotApi.js')
-        return hubspotFormsHandler(req, pluginOptions)
+        try {
+          const apiKey = pluginOptions.apiKey || process.env.HUBSPOT_API_KEY
+          if (!apiKey) {
+            return new Response(JSON.stringify({ error: 'HubSpot API key not configured' }), {
+              headers: { 'Content-Type': 'application/json' },
+              status: 500,
+            })
+          }
+
+          // Fetch all forms from HubSpot
+          const formsResponse = await fetch('https://api.hubapi.com/forms/v2/forms', {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+          })
+
+          if (!formsResponse.ok) {
+            throw new Error(`HubSpot API failed with status ${formsResponse.status}`)
+          }
+
+          const allHubSpotForms = await formsResponse.json()
+
+          // Get manually added forms from database to merge analytics
+          const { getPayload } = await import('payload')
+          const payload = await getPayload({ config: req.payload.config })
+
+          const { docs: manuallyAddedForms } = await payload.find({
+            collection: 'hubspot-forms',
+            limit: 1000,
+          })
+
+          // Create a map of manually added forms for quick lookup
+          const manualFormsMap = new Map(manuallyAddedForms.map((form) => [form.formId, form]))
+
+          // Merge HubSpot forms with cached analytics where available
+          const formsWithAnalytics = allHubSpotForms.map(
+            (hubspotForm: { guid: string; name: string }) => {
+              const manualForm = manualFormsMap.get(hubspotForm.guid)
+
+              return {
+                name: hubspotForm.name,
+                analytics: manualForm?.analytics || null, // Cached analytics if available
+                guid: hubspotForm.guid,
+                isTracked: !!manualForm, // Whether this form is manually added for tracking
+              }
+            },
+          )
+
+          return new Response(JSON.stringify(formsWithAnalytics), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        } catch (error) {
+          return new Response(
+            JSON.stringify({
+              details: error instanceof Error ? error.message : 'Unknown error',
+              error: 'Failed to fetch HubSpot forms',
+            }),
+            {
+              headers: { 'Content-Type': 'application/json' },
+              status: 500,
+            },
+          )
+        }
       },
       method: 'get',
       path: '/hubspot/forms',
