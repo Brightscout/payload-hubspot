@@ -20,12 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gridig/payload-hubspot"
+    "url": "https://github.com/Brightscout/payload-hubspot"
   },
   "bugs": {
-    "url": "https://github.com/gridig/payload-hubspot/issues"
+    "url": "https://github.com/Brightscout/payload-hubspot/issues"
   },
-  "homepage": "https://github.com/gridig/payload-hubspot#readme",
+  "homepage": "https://github.com/Brightscout/payload-hubspot#readme",
   "exports": {
     ".": {
       "import": "./dist/index.js",

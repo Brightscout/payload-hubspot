@@ -142,7 +142,7 @@ Each form includes the following analytics:
 
 ```bash
 # Clone the repository
-git clone https://github.com/gridig/payload-hubspot.git
+git clone https://github.com/Brightscout/payload-hubspot.git
 cd payload-hubspot
 
 # Install dependencies
@@ -182,5 +182,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 For issues and questions:
 
-- [GitHub Issues](https://github.com/gridig/payload-hubspot/issues)
-- [Package Homepage](https://github.com/gridig/payload-hubspot)
+- [GitHub Issues](https://github.com/Brightscout/payload-hubspot/issues)
+- [Package Homepage](https://github.com/Brightscout/payload-hubspot)
